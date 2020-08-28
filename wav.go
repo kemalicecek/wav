@@ -77,9 +77,8 @@ func Open(filePath string) (*File, error) {
 		}
 
 	case "JUNK":
-		wavFile.audioFormat = b[56:58] //LE Uint16
-		wavFile.numChannels = b[58:60] //LE Uint16 //66:67 //74:75
-		fmt.Println(b[38:40])
+		wavFile.audioFormat = b[56:58]   //LE Uint16
+		wavFile.numChannels = b[58:60]   //LE Uint16 //66:67 //74:75
 		wavFile.sampleRate = b[60:64]    //LE Uint32
 		wavFile.byteRate = b[64:68]      //LE Uint32
 		wavFile.blockAlign = b[68:70]    //LE Uint16
