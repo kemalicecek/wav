@@ -167,6 +167,6 @@ func (wavHeader *Header) IsWav() error {
 }
 
 //Close function
-// func (wavHeader *Header) Close() {
+func (wavHeader *Header) Close() {
 
-// }
+}
