@@ -51,8 +51,6 @@ func Open(filePath string) (*File, error) {
 	}
 	b := wavFileBytes[:80]
 
-	wavFile.Data = wavFileBytes[80:]
-
 	wavFile.Title = path.Base(filePath)
 	wavFile.chunkID = b[0:4]         //string
 	wavFile.chunkSize = b[4:8]       //LE Uint32
@@ -79,18 +77,21 @@ func Open(filePath string) (*File, error) {
 		}
 
 	case "JUNK":
-		wavFile.audioFormat = b[56:58]   //LE Uint16
-		wavFile.numChannels = b[38:40]   //LE Uint16
-		wavFile.sampleRate = b[52:56]    //LE Uint32
+		wavFile.audioFormat = b[56:58] //LE Uint16
+		wavFile.numChannels = b[58:60] //LE Uint16 //66:67 //74:75
+		fmt.Println(b[38:40])
+		wavFile.sampleRate = b[60:64]    //LE Uint32
 		wavFile.byteRate = b[64:68]      //LE Uint32
 		wavFile.blockAlign = b[68:70]    //LE Uint16
-		wavFile.bitsPerSample = b[60:63] //LE Uint16
+		wavFile.bitsPerSample = b[52:54] //LE Uint16
 		wavFile.Subchunk2ID = b[72:76]   //string
 		wavFile.Subchunk2Size = b[76:80] //LE Uint32
 	default:
 		return nil, errors.New(string(wavFileBytes[12:16]) + " is an unsupported file")
 	}
 	wavFile.Duration = binary.LittleEndian.Uint32(wavFile.Subchunk2Size) / binary.LittleEndian.Uint32(wavFile.byteRate)
+
+	wavFile.Data = wavFileBytes[binary.LittleEndian.Uint32(wavFile.subchunk1Size)-binary.LittleEndian.Uint32(wavFile.Subchunk2Size):]
 
 	return &wavFile, nil
 }
