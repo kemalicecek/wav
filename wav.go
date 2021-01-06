@@ -28,8 +28,8 @@ type Header struct {
 	byteRate      []byte
 	blockAlign    []byte
 	bitsPerSample []byte
-	Subchunk2ID   []byte
-	Subchunk2Size []byte
+	subchunk2ID   []byte
+	subchunk2Size []byte
 }
 
 //Open wav file
@@ -66,12 +66,12 @@ func Open(filePath string) (*File, error) {
 		wavFile.byteRate = b[28:32]      //LE Uint32
 		wavFile.blockAlign = b[32:34]    //LE Uint16
 		wavFile.bitsPerSample = b[34:36] //LE Uint16
-		wavFile.Subchunk2ID = b[36:40]   //string
+		wavFile.subchunk2ID = b[36:40]   //string
 		switch string(b[36:40]) {
 		case "data":
-			wavFile.Subchunk2Size = b[40:44] //LE Uint32
+			wavFile.subchunk2Size = b[40:44] //LE Uint32
 		case "LIST":
-			wavFile.Subchunk2Size = b[74:78] //LE Uint32
+			wavFile.subchunk2Size = b[74:78] //LE Uint32
 			// default:
 			// 	wavFile.Subchunk2Size = [0] //LE Uint32
 		}
@@ -83,14 +83,14 @@ func Open(filePath string) (*File, error) {
 		wavFile.byteRate = b[64:68]      //LE Uint32
 		wavFile.blockAlign = b[68:70]    //LE Uint16
 		wavFile.bitsPerSample = b[52:54] //LE Uint16
-		wavFile.Subchunk2ID = b[72:76]   //string
-		wavFile.Subchunk2Size = b[76:80] //LE Uint32
+		wavFile.subchunk2ID = b[72:76]   //string
+		wavFile.subchunk2Size = b[76:80] //LE Uint32
 	default:
 		return nil, errors.New(string(wavFileBytes[12:16]) + " is an unsupported file")
 	}
-	wavFile.Duration = binary.LittleEndian.Uint32(wavFile.Subchunk2Size) / binary.LittleEndian.Uint32(wavFile.byteRate)
 
-	wavFile.Data = wavFileBytes[binary.LittleEndian.Uint32(wavFile.subchunk1Size)-binary.LittleEndian.Uint32(wavFile.Subchunk2Size):]
+	wavFile.Duration = binary.LittleEndian.Uint32(wavFile.subchunk2Size) / binary.LittleEndian.Uint32(wavFile.byteRate)
+	wavFile.Data = wavFileBytes[binary.LittleEndian.Uint32(wavFile.chunkSize)-binary.LittleEndian.Uint32(wavFile.subchunk2Size):]
 
 	return &wavFile, nil
 }
@@ -116,8 +116,8 @@ func (wavHeader *Header) PrintWavHeader() error {
 	// fmt.Printf("BlockAlign = %s\n", extraParamSize)
 	// extraParams := b[20:22]
 	// fmt.Printf("ExtraParams = %s\n", extraParams)
-	fmt.Printf("Subchunk2ID = %s, ", wavHeader.Subchunk2ID)
-	fmt.Printf("Subchunk2Size = %d\n", binary.LittleEndian.Uint32(wavHeader.Subchunk2Size))
+	fmt.Printf("Subchunk2ID = %s, ", wavHeader.subchunk2ID)
+	fmt.Printf("Subchunk2Size = %d\n", binary.LittleEndian.Uint32(wavHeader.subchunk2Size))
 	return nil
 }
 
